@@ -1,0 +1,82 @@
+import smtplib
+from email.message import EmailMessage
+import os
+import time
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Get credentials securely
+sender_email = os.getenv("SENDER_EMAIL")
+app_password = os.getenv("EMAIL_APP_PASSWORD")
+
+# HR email list
+hr_emails = [
+    'sharvilbookshet13@gmail.com',
+    # add more emails here
+]
+
+# PDF attachment path
+file_path = r'C:/Users/HP/Downloads/Sharvil_Anil_Bookshet_CV (1).pdf'
+
+# Read file
+try:
+    with open(file_path, 'rb') as f:
+        file_data = f.read()
+        file_name = os.path.basename(f.name)
+except Exception as e:
+    print(f"❌ Error reading file: {e}")
+    exit()
+
+failed_emails = []
+
+try:
+    # Connect to Gmail SMTP
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        server.login(sender_email, app_password)
+
+        for hr_email in hr_emails:
+            try:
+                msg = EmailMessage()
+                msg['From'] = f'Sharvil Bookshet <{sender_email}>'
+                msg['To'] = hr_email
+                msg['Subject'] = 'Data Analyst Opportunity – Experienced Professional'
+
+                msg.set_content(
+                    "Hello,\n\n"
+                    "I hope this email finds you well.\n\n"
+                    "My name is Sharvil Bookshet, and I am a Data Analyst with 3.5 years of professional "
+                    "experience in SQL, Python, Tableau, Excel, and Power BI.\n\n"
+                    "I am currently exploring new opportunities and would like to be considered for any "
+                    "relevant openings that match my profile. Please find my resume attached for your "
+                    "review.\n\n"
+                    "Thank you for your time and consideration.\n\n"
+                    "Kind regards,\n"
+                    "Sharvil Bookshet\n"
+                    "Data Analyst"
+                )
+
+                # Attach PDF
+                msg.add_attachment(
+                    file_data,
+                    maintype='application',
+                    subtype='pdf',
+                    filename=file_name
+                )
+
+                # Send email
+                server.send_message(msg)
+                print(f"✅ Email sent to {hr_email}")
+
+                time.sleep(60)  # safer delay
+
+            except Exception as e:
+                print(f"❌ Failed to send email to {hr_email}: {e}")
+                failed_emails.append(hr_email)
+
+except Exception as e:
+    print(f"❌ Server error: {e}")
+
+print("\nProcess completed.")
+print("Failed emails:", failed_emails)
